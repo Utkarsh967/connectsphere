@@ -1,10 +1,13 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+
+// Load environment variables FIRST
+dotenv.config();
+
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
-
-dotenv.config();
+const uploadRoutes = require("./routes/uploadRoutes");
 
 // Connect to MongoDB
 connectDB();
@@ -14,7 +17,9 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
 app.use("/api/auth", authRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // Test Route
 app.get("/", (req, res) => {

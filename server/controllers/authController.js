@@ -8,12 +8,12 @@ const registerUser = async (req, res) => {
     const { fullName, email, password } = req.body;
 
     // Check all fields
-    if (!fullName || !email || !password) {
+    if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
       });
-    }
+    } 
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -30,16 +30,22 @@ const registerUser = async (req, res) => {
 
     // Create user
     const user = await User.create({
-      fullName,
-      email,
-      password: hashedPassword,
+          fullName,
+          email,
+          password: hashedPassword,
     });
 
-    res.status(201).json({
-      success: true,
-      message: "User registered successfully",
-      user,
-    });
+ res.status(200).json({
+  success: true,
+  message: "Profile updated successfully",
+  user: {
+    id: user._id,
+    fullName: user.fullName,
+    email: user.email,
+    avatar: user.avatar,
+    bio: user.bio,
+  },
+});
 
   } catch (error) {
     console.error(error);
@@ -84,12 +90,50 @@ const loginUser = async (req, res) => {
       message: "Login successful",
       token,
       user: {
-        id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        avatar: user.avatar,
-        bio: user.bio,
-      },
+          id: user._id,
+          fullName: user.fullName,
+          email: user.email,
+          avatar: user.avatar,
+},
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+const getProfile = async (req, res) => {
+  res.status(200).json({
+    success: true,
+    user: req.user,
+  });
+};
+const updateProfile = async (req, res) => {
+  try {
+    const { fullName, bio } = req.body;
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    user.fullName = fullName || user.fullName;
+    user.bio = bio || user.bio;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user,
     });
 
   } catch (error) {
@@ -105,4 +149,6 @@ const loginUser = async (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
+  getProfile,
+  updateProfile,
 };
